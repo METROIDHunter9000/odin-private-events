@@ -1,0 +1,35 @@
+<%= form_with model: @event do |form| %>
+  <div class="field">
+    <%= form.label :title, "Title" %><br />
+    <% @event.errors.full_messages_for(:title).each do |msg| %>
+      <span class="input_error"><%= msg %></span>
+    <% end %>
+    <%= form.text_field :title, maxlength: 50 %>
+  </div>
+  <div class="field">
+    <%= form.label :body, "Tell us about your event!" %><br />
+    <% @event.errors.full_messages_for(:body).each do |msg| %>
+      <span class="input_error"><%= msg %></span>
+    <% end %>
+    <%= form.text_area :body %>
+  </div>
+  <div class="field">
+    <%= form.label :date, "When will this event occur?" %><br />
+    <% @event.errors.full_messages_for(:date).each do |msg| %>
+      <span class="input_error"><%= msg %></span>
+    <% end %>
+    <%= form.datetime_field :date %>
+  </div>
+  <div class="field">
+    <%= form.label :is_private, "Is this event private? If it is private, people cannot RSVP without your approval" %><br />
+    <% @event.errors.full_messages_for(:is_private).each do |msg| %>
+      <span class="input_error"><%= msg %></span>
+    <% end %>
+    <%= form.radio_button :is_private, "false" %>
+    <%= form.label :is_private_true, "Public (open for RSVP)" %>
+    <br />
+    <%= form.radio_button :is_private, "true" %>
+    <%= form.label :is_private_true, "Private (organizer must accept requests or send invitations for RSVP)" %>
+  </div>
+  <%= form.submit "Finalize Event" %>
+<% end %>

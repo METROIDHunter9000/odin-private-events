@@ -1,0 +1,6 @@
+<% if user_signed_in? %>
+  <span>Logged in as <b><%= User.find(current_user.id).username %></b></span>
+  <%= link_to "Sign Out", destroy_user_session_path, method: :delete, data: { turbo_method: "delete", turbo_confirm: "Do you really want to sign out? Like, for real?"} %>
+<% else %>
+  <span>Events are more fun when you can RSVP. <%= link_to "Sign In", new_user_session_path %> or <%= link_to "Sign Up", new_user_registration_path %>!</span>
+<% end %>

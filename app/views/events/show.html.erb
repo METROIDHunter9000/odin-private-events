@@ -1,0 +1,95 @@
+<%= render @event %>
+
+<!-- 
+  If current user is organizer: show edit & delete links
+  If current user is organizer AND event is private: show invite, view RSVP requests, and kick attendee links (latter will come from partial view for EventAttendees)
+    invitation, request, and kicking management is all done in attendee view
+
+  If current user is not organizer:
+    if current user is attendee: show undo RSVP (& conditional warning if event is private)
+    if event is private AND current user is NOT attendee: 
+
+  Unless (current user is NOT organizer AND event is private) OR (current user is attendee):
+    show other attendees
+
+-->
+<% user_is_organizer = current_user.id == @event.organizer_id %>
+<% attendee_ids = @attendees.map { |a| a.id.to_i } %>
+<% user_is_attendee = current_user.id.to_i.in? attendee_ids %>
+
+<% private_rsvp_delete_other_confirm = "Are you sure you want to remove this attendee from the event? "%>
+<% private_rsvp_delete_self_confirm = "Are you sure you want to remove yourself from the attendees for this event? If you change your mind, you will need to be added to this event again, either by invitation or by request." %>
+<% public_rsvp_delete_self_confirm = "Are you sure you want to remove yourself from the attendees for this event? If you change your mind, you can RSVP again at any time." %>
+
+<% link_request = link_to "Request to join",
+  event_request_path(event_id: @event.id, user_id: current_user.id),
+  data: { 
+    turbo_method: :post, 
+    turbo_confirm: "Are you sure you want to request to join #{@event.title}" 
+  }
+%>
+
+<% if @event.is_private %>
+  <% rsvp_delete_self_confirm = private_rsvp_delete_self_confirm %>
+<% else %>
+  <% rsvp_delete_self_confirm = public_rsvp_delete_self_confirm %>
+<% end %>
+  
+<% if user_is_organizer %>
+  <%= link_to "Edit", edit_event_path %>
+  <%= link_to "Delete", @event, 
+    data: { 
+      turbo_method: :delete, 
+      turbo_confirm: "Are you sure you want to delete this event? All attendees will be notified!" 
+    } 
+  %>
+  <% if @event.is_private %>
+    <%= link_to "Invite", "https://example.com/", target: '_blank' %>
+  <% end %>
+<% elsif ! user_is_attendee %>
+  <% if @event.is_private %>
+    <%= link_request %>
+  <% else %>
+    <%= link_to "RSVP", 
+      event_rsvp_path(event_id: @event.id, user_id: current_user.id), 
+      data: { 
+        turbo_method: :post, 
+        turbo_confirm: "Are you sure you want to RSVP for this event? You can change your mind at any time." 
+      } 
+    %>
+  <% end %>
+<% else %>
+  <span>You've RSVP'ed for this event.</span>
+  <%= link_to "Undo",
+    event_rsvp_path(event_id: @event.id, user_id: current_user.id), 
+    data: {
+      turbo_method: "DELETE", 
+      turbo_confirm: rsvp_delete_self_confirm
+    }
+  %>
+<% end %>
+
+<% if !@event.is_private || user_is_organizer || user_is_attendee %>
+  <h4><%= @attendees.count %> people attending</h4>
+  <ul>
+    <% @attendees.each do |attendee| %>
+      <li>
+        <%= attendee.username %>
+        <% if user_is_organizer && @event.is_private %>
+          <%= link_to "Remove", 
+            event_rsvp_path(event_id: @event.id, user_id: attendee.id), 
+            data: {
+              turbo_method: "DELETE", 
+              turbo_confirm: "Are you sure you wish to remove this attendee? They will not be able to RSVP again without an approved request or an invitation"
+            }
+          %>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <h4>Attendees are hidden - you must be invited to join!</h4>
+  <h4>Alternatively, you could <%= link_request %>!</h4>
+<% end %>
+<!-- Invitations -->
+<!-- Requests -->

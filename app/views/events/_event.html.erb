@@ -1,0 +1,9 @@
+<h1><%= link_to event.title, event %></h1>
+<h3>Organized by <%= link_to event.organizer, "/users/#{event.organizer.username}" %></h3>
+<h3>When: <%= event.date %></h3>
+<% if event.is_private %>
+  <h4>!This event is <strong>private!</strong></h4>
+<% end %>
+<p>
+  <%= event.body %>
+</p>

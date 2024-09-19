@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "Private Events" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body>
+    <% flash.each do |type, msg| %>
+      <div class="flash-<%= type %>">
+        <%= msg %>
+      </div>
+    <% end %>
+
+    <header>
+      <%= render template: 'templates/site-header' %>
+    </header>
+
+    <%= yield %>
+
+    <footer>
+      <a href="/" class="title">PrivateEvents</a>
+      <a target="_blank" href="https://www.theodinproject.com/lessons/ruby-on-rails-private-events">The Odin Project</a>
+    </footer>
+  </body>
+</html>
