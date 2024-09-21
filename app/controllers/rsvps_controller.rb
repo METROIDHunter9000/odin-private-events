@@ -13,12 +13,25 @@ class RsvpsController < ApplicationController
     user_id = params[:user_id].to_i # url params parse as strings by default
 
     if current_user.id == event.organizer_id
-      if event.is_public
+      if !event.is_private
         head :forbidden
       elsif user_id == current_user.id
         head :bad_request
       else
         # valid case 1. current user == organizer AND event is private AND attendee != organizer: cross-ref EventRequests (accepting RSVP request)
+        request = EventRequest.find_by(user_id: user_id, event_id: event.id)
+        if request != nil
+          rsvp = Rsvp.new(attendee_id: user_id, event_id: event.id)
+          requestee = User.find(request.user_id)
+          if rsvp.save && request.destroy
+            flash[:notice] = "You have accepted #{requestee.username}'s request to join #{event.title}!"
+            redirect_to event_path(id: event.id)
+          else
+            flash.now[:error] = "Failed to accept #{requestee.username}' request to join #{event.title}"
+          end
+        else
+          head :bad_request
+        end
       end
     elsif current_user.id == user_id
       if event.is_private
@@ -26,19 +39,17 @@ class RsvpsController < ApplicationController
       else
         # valid case 3. current user != organizer AND current user id matches user_id AND event is public (open RSVP)
         rsvp = Rsvp.new(attendee_id: user_id, event_id: event.id)
+        if rsvp.save
+          flash[:notice] = "You have RSVP'd for #{event.title}!"
+          redirect_to event_path(id: event.id)
+        else
+          flash.now[:error] = "Failed to RSVP for #{event.title}"
+        end
       end
     else
       head :bad_request
     end
 
-    if rsvp != nil
-      if rsvp.save
-        flash[:notice] = "You have RSVP'd for #{event.title}!"
-        redirect_to event_path(id: event.id)
-      else
-        flash.now[:error] = "Failed to RSVP for #{event.title}"
-      end
-    end
   end
 
   def destroy

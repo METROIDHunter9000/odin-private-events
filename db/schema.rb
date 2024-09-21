@@ -10,7 +10,27 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_09_17_104014) do
+ActiveRecord::Schema[7.2].define(version: 2024_09_19_113640) do
+  create_table "event_invitations", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.integer "event_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["event_id"], name: "index_event_invitations_on_event_id"
+    t.index ["user_id", "event_id"], name: "index_event_invitations_on_user_id_and_event_id", unique: true
+    t.index ["user_id"], name: "index_event_invitations_on_user_id"
+  end
+
+  create_table "event_requests", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.integer "event_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["event_id"], name: "index_event_requests_on_event_id"
+    t.index ["user_id", "event_id"], name: "index_event_requests_on_user_id_and_event_id", unique: true
+    t.index ["user_id"], name: "index_event_requests_on_user_id"
+  end
+
   create_table "events", force: :cascade do |t|
     t.integer "organizer_id", null: false
     t.string "title", limit: 50, null: false
@@ -54,6 +74,10 @@ ActiveRecord::Schema[7.2].define(version: 2024_09_17_104014) do
     t.index ["username"], name: "index_users_on_username", unique: true
   end
 
+  add_foreign_key "event_invitations", "events"
+  add_foreign_key "event_invitations", "users"
+  add_foreign_key "event_requests", "events"
+  add_foreign_key "event_requests", "users"
   add_foreign_key "events", "users", column: "organizer_id"
   add_foreign_key "rsvps", "events"
   add_foreign_key "rsvps", "users", column: "attendee_id"

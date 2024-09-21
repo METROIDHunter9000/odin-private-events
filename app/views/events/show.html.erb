@@ -48,7 +48,14 @@
   <% end %>
 <% elsif ! user_is_attendee %>
   <% if @event.is_private %>
-    <%= link_request %>
+    <% if EventRequest.where(user_id: current_user.id, event_id: @event.id).any? %>
+      <span>You have requested to join this event - but you can 
+        <%= link_to "cancel your request", event_request_path(event_id: @event.id, user_id: current_user.id), data: {turbo_method: "delete", turbo_confirm: "If you cancel your request to join this event, you will have to submit a new request later if you change your mind - and you will move to the bottom of the queue. Are you sure you want to cancel your request?"} %> 
+        at any time.
+      </span>
+    <% else %>
+      <%= link_request %>
+    <% end %>
   <% else %>
     <%= link_to "RSVP", 
       event_rsvp_path(event_id: @event.id, user_id: current_user.id), 
@@ -91,5 +98,14 @@
   <h4>Attendees are hidden - you must be invited to join!</h4>
   <h4>Alternatively, you could <%= link_request %>!</h4>
 <% end %>
-<!-- Invitations -->
+
 <!-- Requests -->
+<% if @event.is_private && user_is_organizer %>
+  <% requests = EventRequest.where(event_id: @event.id) %>
+  <h4><%= requests.count %> outstanding requests</h4>
+  <ul>
+    <%= render requests %>
+  </ul>
+<% end %>
+
+<!-- Invitations -->
