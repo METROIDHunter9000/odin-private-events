@@ -10,25 +10,17 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_09_19_113640) do
-  create_table "event_invitations", force: :cascade do |t|
+ActiveRecord::Schema[7.2].define(version: 2024_10_01_120903) do
+  create_table "event_user_relations", force: :cascade do |t|
     t.integer "user_id", null: false
     t.integer "event_id", null: false
+    t.string "type", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["event_id"], name: "index_event_invitations_on_event_id"
-    t.index ["user_id", "event_id"], name: "index_event_invitations_on_user_id_and_event_id", unique: true
-    t.index ["user_id"], name: "index_event_invitations_on_user_id"
-  end
-
-  create_table "event_requests", force: :cascade do |t|
-    t.integer "user_id", null: false
-    t.integer "event_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["event_id"], name: "index_event_requests_on_event_id"
-    t.index ["user_id", "event_id"], name: "index_event_requests_on_user_id_and_event_id", unique: true
-    t.index ["user_id"], name: "index_event_requests_on_user_id"
+    t.index ["event_id"], name: "index_event_user_relations_on_event_id"
+    t.index ["user_id", "event_id", "type"], name: "index_event_user_relations_on_user_id_and_event_id_and_type", unique: true
+    t.index ["user_id", "event_id"], name: "index_event_user_relations_on_user_id_and_event_id", unique: true
+    t.index ["user_id"], name: "index_event_user_relations_on_user_id"
   end
 
   create_table "events", force: :cascade do |t|
@@ -40,14 +32,6 @@ ActiveRecord::Schema[7.2].define(version: 2024_09_19_113640) do
     t.datetime "updated_at", null: false
     t.boolean "is_private", default: false, null: false
     t.index ["organizer_id"], name: "index_events_on_organizer_id"
-  end
-
-  create_table "rsvps", id: false, force: :cascade do |t|
-    t.integer "attendee_id", null: false
-    t.integer "event_id", null: false
-    t.index ["attendee_id"], name: "index_rsvps_on_attendee_id"
-    t.index ["event_id", "attendee_id"], name: "index_rsvps_on_event_id_and_attendee_id", unique: true
-    t.index ["event_id"], name: "index_rsvps_on_event_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -74,11 +58,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_09_19_113640) do
     t.index ["username"], name: "index_users_on_username", unique: true
   end
 
-  add_foreign_key "event_invitations", "events"
-  add_foreign_key "event_invitations", "users"
-  add_foreign_key "event_requests", "events"
-  add_foreign_key "event_requests", "users"
+  add_foreign_key "event_user_relations", "events"
+  add_foreign_key "event_user_relations", "users"
   add_foreign_key "events", "users", column: "organizer_id"
-  add_foreign_key "rsvps", "events"
-  add_foreign_key "rsvps", "users", column: "attendee_id"
 end

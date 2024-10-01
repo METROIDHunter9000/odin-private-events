@@ -45,9 +45,9 @@ Rails.application.routes.draw do
     post '/rsvp/:user_id', to: "rsvps#create", as: "rsvp"
     delete '/rsvp/:user_id', to: "rsvps#destroy"
 
-    resources :invitations, only: :index, to: "eventinvitations#index", as: "invitations"
-    post '/invitation/:user_id', to: "eventinvitations#create", as: "invitation"
-    delete '/invitation/:user_id', to: "eventinvitations#destroy"
+    resources :invitations, only: :index, to: "event_invitations#index", as: "invitations"
+    post '/invitation/:user_id', to: "event_invitations#create", as: "invitation"
+    delete '/invitation/:user_id', to: "event_invitations#destroy"
 
     resources :requests, only: :index, to: "event_requests#index", as: "requests"
     post '/request/:user_id', to: "event_requests#create", as: "request"

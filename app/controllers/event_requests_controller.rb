@@ -1,5 +1,5 @@
 class EventRequestsController < ApplicationController
-before_action :authenticate_user!
+  before_action :authenticate_user!
   before_action :authorize_user, only: :create
   before_action :authorize_user_or_organizer, only: :destroy
 

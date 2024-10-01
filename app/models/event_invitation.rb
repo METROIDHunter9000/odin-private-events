@@ -1,0 +1,2 @@
+class EventInvitation < EventUserRelation
+end

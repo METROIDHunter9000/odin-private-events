@@ -1,4 +1,2 @@
-class EventRequest < ApplicationRecord
-  belongs_to :user
-  belongs_to :event
+class EventRequest < EventUserRelation
 end

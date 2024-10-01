@@ -14,7 +14,7 @@ class EventsController < ApplicationController
 
   def show
     @event = Event.find(params[:id])
-    @attendees = Rsvp.where(event_id: @event.id).map { |rsvp| User.find(rsvp.attendee_id) } 
+    @attendees = Rsvp.where(event_id: @event.id).map { |rsvp| User.find(rsvp.user_id) } 
   end
 
   def new

@@ -1,0 +1,12 @@
+<% invitee = User.find(event_invitation.user_id) %>
+<li>
+  <%= link_to invitee.username, "/users/#{invitee.username}" %>
+    - [
+      <%= 
+        link_to "Rescind", event_invitation_path(event_id: event_invitation.event_id, user_id: event_invitation.user_id), data: {
+          turbo_method: "DELETE",
+          turbo_confirm: "Are you sure you wish to rescind your invitation to #{invitee.username}?"
+        }
+      %>
+  ]
+</li>

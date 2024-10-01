@@ -18,12 +18,12 @@ class RsvpsController < ApplicationController
       elsif user_id == current_user.id
         head :bad_request
       else
-        # valid case 1. current user == organizer AND event is private AND attendee != organizer: cross-ref EventRequests (accepting RSVP request)
+        # valid case 1. current user == organizer AND event is private AND user != organizer: cross-ref EventRequests (accepting RSVP request)
         request = EventRequest.find_by(user_id: user_id, event_id: event.id)
         if request != nil
-          rsvp = Rsvp.new(attendee_id: user_id, event_id: event.id)
+          rsvp = Rsvp.new(user_id: user_id, event_id: event.id)
           requestee = User.find(request.user_id)
-          if rsvp.save && request.destroy
+          if request.destroy && rsvp.save
             flash[:notice] = "You have accepted #{requestee.username}'s request to join #{event.title}!"
             redirect_to event_path(id: event.id)
           else
@@ -38,7 +38,7 @@ class RsvpsController < ApplicationController
         # valid case 2. current user != organizer AND current user id matches user_id AND event is private (accepting Event Invitation)
       else
         # valid case 3. current user != organizer AND current user id matches user_id AND event is public (open RSVP)
-        rsvp = Rsvp.new(attendee_id: user_id, event_id: event.id)
+        rsvp = Rsvp.new(user_id: user_id, event_id: event.id)
         if rsvp.save
           flash[:notice] = "You have RSVP'd for #{event.title}!"
           redirect_to event_path(id: event.id)
@@ -53,26 +53,26 @@ class RsvpsController < ApplicationController
   end
 
   def destroy
-    attendee_id = params[:user_id].to_i # url params parse as strings by default
+    user_id = params[:user_id].to_i # url params parse as strings by default
     event_id = params[:event_id].to_i
-    attendee = User.find(attendee_id)
+    user = User.find(user_id)
     event = Event.find(event_id)
 
-    rsvp = Rsvp.where(event_id: event_id, attendee_id: attendee_id)
+    rsvp = Rsvp.where(event_id: event_id, user_id: user_id)
     rsvp.delete_all
-    if attendee_id = current_user.id
+    if user_id = current_user.id
       flash[:notice] = "You have removed yourself from #{event.title}"
     else
-      flash[:notice] = "#{attendee.username} has been removed from #{event.title}"
+      flash[:notice] = "#{user.username} has been removed from #{event.title}"
     end
     redirect_to event_path(id: event_id), status: :see_other
   end
 
   private
   def authorize_user
-    attendee_id = params[:user_id].to_i
+    user_id = params[:user_id].to_i
     event = Event.find(params[:event_id]) 
-    if ! (current_user.id == event.organizer_id && event.is_private || current_user.id == attendee_id)
+    if ! (current_user.id == event.organizer_id && event.is_private || current_user.id == user_id)
       flash[:error] = "You are not permitted to delete another person's RSVP status"
       redirect_to "/", status: :see_other
     end

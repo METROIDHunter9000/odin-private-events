@@ -1,0 +1,5 @@
+Requests
+Send attendees emails if event is updated or canceled
+TESTS!
+Invitations
+Deployment with postgres on OpenSUSE & FreeBSD

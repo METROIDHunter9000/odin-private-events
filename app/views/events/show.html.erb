@@ -1,18 +1,9 @@
+<% content_for :head do %>
+  <%= javascript_import_module_tag "event_show" %>
+<% end %>
+
 <%= render @event %>
 
-<!-- 
-  If current user is organizer: show edit & delete links
-  If current user is organizer AND event is private: show invite, view RSVP requests, and kick attendee links (latter will come from partial view for EventAttendees)
-    invitation, request, and kicking management is all done in attendee view
-
-  If current user is not organizer:
-    if current user is attendee: show undo RSVP (& conditional warning if event is private)
-    if event is private AND current user is NOT attendee: 
-
-  Unless (current user is NOT organizer AND event is private) OR (current user is attendee):
-    show other attendees
-
--->
 <% user_is_organizer = current_user.id == @event.organizer_id %>
 <% attendee_ids = @attendees.map { |a| a.id.to_i } %>
 <% user_is_attendee = current_user.id.to_i.in? attendee_ids %>
@@ -99,13 +90,34 @@
   <h4>Alternatively, you could <%= link_request %>!</h4>
 <% end %>
 
-<!-- Requests -->
 <% if @event.is_private && user_is_organizer %>
+  <!-- Requests -->
   <% requests = EventRequest.where(event_id: @event.id) %>
   <h4><%= requests.count %> outstanding requests</h4>
   <ul>
     <%= render requests %>
   </ul>
+  <!-- Invitations -->
+  <% invitations = EventInvitation.where(event_id: @event.id) %>
+  <h4><%= invitations.count %> outstanding invitations</h4>
+  <ul>
+    <%= render invitations %>
+  </ul>
+
+  <h4>Invite somebody new to your event</h4>
+  <!-- In a real-world application, we would never pull an ENTIRE table & display it on-screen
+    This is just a proof-of-concept for filtering through a list -->
+  <% all_users = User.all %>
+  <input type="text" id="user_invitation_search_bar" placeholder="Search for a user...">
+  <ul id="user_invitation_search_list">
+    <% for user in all_users %>
+      <li>
+        <%= 
+          link_to user.username, event_invitation_path(event_id: @event.id, user_id: user.id),
+            data: { turbo_method: "POST", turbo_confirm: "Are you sure you want to invite #{user.username} to #{@event.title}?" }
+        %>
+      </li>
+    <% end %>
+  </ul>
 <% end %>
 
-<!-- Invitations -->

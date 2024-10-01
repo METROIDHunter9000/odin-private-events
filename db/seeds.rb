@@ -11,7 +11,7 @@
 
 test_password = "password"
 
-Rsvp.delete_all
+EventUserRelation.delete_all
 Event.delete_all
 User.delete_all
 
@@ -64,5 +64,6 @@ event_wedding = Event.create(title: "Wedding Receiption",
                         is_private: true)
 
 # user 3 only attends events
-Rsvp.create!(attendee_id: user3.id, event_id: event_snail.id)
-Rsvp.create!(attendee_id: user3.id, event_id: event_trem.id)
+Rsvp.create!(user_id: user3.id, event_id: event_snail.id)
+EventInvitation.create!(user_id: user3.id, event_id: event_trem.id)
+EventRequest.create!(user_id: user3.id, event_id: event_wedding.id)
