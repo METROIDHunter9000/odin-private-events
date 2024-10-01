@@ -36,6 +36,18 @@ class RsvpsController < ApplicationController
     elsif current_user.id == user_id
       if event.is_private
         # valid case 2. current user != organizer AND current user id matches user_id AND event is private (accepting Event Invitation)
+        invitation = EventInvitation.find_by(user_id: user_id, event_id: event.id)
+        if invitation != nil
+          rsvp = Rsvp.new(user_id: user_id, event_id: event.id)
+          if invitation.destroy && rsvp.save
+            flash[:notice] = "You have accepted #{event.organizer.username}'s invitation to join #{event.title}!"
+            redirect_to event_path(id: event.id)
+          else
+            flash.now[:error] = "Failed to accept #{event.organizer.username}' invitation to join #{event.title}"
+          end
+        else
+          head :bad_request
+        end
       else
         # valid case 3. current user != organizer AND current user id matches user_id AND event is public (open RSVP)
         rsvp = Rsvp.new(user_id: user_id, event_id: event.id)

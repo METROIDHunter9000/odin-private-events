@@ -6,7 +6,10 @@
 
 <% user_is_organizer = current_user.id == @event.organizer_id %>
 <% attendee_ids = @attendees.map { |a| a.id.to_i } %>
-<% user_is_attendee = current_user.id.to_i.in? attendee_ids %>
+<% user_event_relation = EventUserRelation.find_by(user_id: current_user.id, event_id: @event.id) %>
+<% user_is_attendee = user_event_relation && user_event_relation.type == 'Rsvp' %>
+<% user_is_invited = user_event_relation && user_event_relation.type == 'EventInvitation' %>
+<% user_has_requested = user_event_relation && user_event_relation.type == 'EventRequest' %>
 
 <% private_rsvp_delete_other_confirm = "Are you sure you want to remove this attendee from the event? "%>
 <% private_rsvp_delete_self_confirm = "Are you sure you want to remove yourself from the attendees for this event? If you change your mind, you will need to be added to this event again, either by invitation or by request." %>
@@ -39,10 +42,17 @@
   <% end %>
 <% elsif ! user_is_attendee %>
   <% if @event.is_private %>
-    <% if EventRequest.where(user_id: current_user.id, event_id: @event.id).any? %>
+    <% if user_has_requested %>
       <span>You have requested to join this event - but you can 
         <%= link_to "cancel your request", event_request_path(event_id: @event.id, user_id: current_user.id), data: {turbo_method: "delete", turbo_confirm: "If you cancel your request to join this event, you will have to submit a new request later if you change your mind - and you will move to the bottom of the queue. Are you sure you want to cancel your request?"} %> 
         at any time.
+      </span>
+    <% elsif user_is_invited %>
+      <span>You have been invited to join this event! Will you [
+        <%= link_to "accept", event_rsvp_path(event_id: @event.id, user_id: current_user.id), data: {turbo_method: "post", turbo_confirm: "Are you sure you wish to accept the invitation?"} %>
+        ] or [
+        <%= link_to "reject", event_invitation_path(event_id: @event.id, user_id: current_user.id), data: {turbo_method: "delete", turbo_confirm: "Are you sure you wish to reject the invitation?"} %>
+        ] ?
       </span>
     <% else %>
       <%= link_request %>
@@ -85,7 +95,7 @@
       </li>
     <% end %>
   </ul>
-<% else %>
+<% elsif !user_has_requested && !user_is_invited %>
   <h4>Attendees are hidden - you must be invited to join!</h4>
   <h4>Alternatively, you could <%= link_request %>!</h4>
 <% end %>
