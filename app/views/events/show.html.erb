@@ -115,12 +115,21 @@
   </ul>
 
   <h4>Invite somebody new to your event</h4>
-  <!-- In a real-world application, we would never pull an ENTIRE table & display it on-screen
-    This is just a proof-of-concept for filtering through a list -->
-  <% all_users = User.all %>
+
+  <!-- Pull all users where EventUserRelation.user_id  is null
+      OR where
+  -->
+
+  <!-- Rails will intelligently recognize to join "ON users.id = event_user_relations.user_id" -->
   <input type="text" id="user_invitation_search_bar" placeholder="Search for a user...">
+  <%
+    # TODO: use OFFSET to allow scrolling through pages of users,
+    # much like LIMIT is used below to limit the number of users returned
+    all_users = User.where.not(id: @event.organizer_id).order(:username).limit(8)
+    users_to_invite = all_users - @related_users
+  %>
   <ul id="user_invitation_search_list">
-    <% for user in all_users %>
+    <% users_to_invite.each do |user| %>
       <li>
         <%= 
           link_to user.username, event_invitation_path(event_id: @event.id, user_id: user.id),
