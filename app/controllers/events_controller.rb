@@ -15,7 +15,6 @@ class EventsController < ApplicationController
   def show
     @event = Event.find(params[:id])
     @attendees = Rsvp.where(event_id: @event.id).map { |rsvp| User.find(rsvp.user_id) } 
-    @related_users = User.joins(:event_user_relations).where(event_user_relations: { event_id: @event.id })
   end
 
   def new

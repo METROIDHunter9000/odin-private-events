@@ -4,11 +4,6 @@ class User < ApplicationRecord
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable
 
-  # Remember to establish relationships between models both ways!
-  # Declaring that a user "has many" event user relations give us
-  # the power to cleanly join the tables & perform queries
-  has_many :event_user_relations
-
   has_many :organized_events, class_name: "Event"
 
   has_many :event_attendees, foreign_key: :user_id
