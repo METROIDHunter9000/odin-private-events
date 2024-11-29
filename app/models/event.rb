@@ -1,7 +1,7 @@
 class Event < ApplicationRecord
   belongs_to :organizer, class_name: "User"
 
-  has_many :event_user_relations
+  has_many :event_user_relations, dependent: :delete_all
   has_many :event_attendees
   has_many :attendees, class_name: "User", through: :event_attendees, source: :attendee
 

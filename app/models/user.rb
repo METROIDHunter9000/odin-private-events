@@ -9,7 +9,7 @@ class User < ApplicationRecord
   # the power to cleanly join the tables & perform queries
   has_many :event_user_relations
 
-  has_many :organized_events, class_name: "Event"
+  has_many :organized_events, class_name: "Event", foreign_key: "organizer_id"
 
   has_many :event_attendees, foreign_key: :user_id
   has_many :attending_events, class_name: "Event", through: :event_attendees
