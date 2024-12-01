@@ -26,7 +26,7 @@ class EventsController < ApplicationController
     params[:event][:organizer_id] = current_user.id
     @event = Event.new(event_params)
     if @event.save
-      redirect_to action: :show, id: @event.id
+      redirect_to @event
     else
       flash.now[:error] = "Failed to save your event!"
       render :new, status: :unprocessable_entity
@@ -38,9 +38,32 @@ class EventsController < ApplicationController
   end
 
   def update
-    event = Event.find(params[:id])
-    if event.update(event_params)
-      redirect_to action: :show, id: @event.id
+    @event = Event.find(params[:id])
+    p @event.is_private
+    p event_params[:is_private]
+    going_public = @event.is_private && event_params[:is_private] == "false"
+    p going_public
+    if going_public
+      puts "TODO Prompt user to confirm when making a private event public"
+    end
+    if @event.update(event_params)
+      if going_public
+        @event.event_user_relations.where(type: :EventInvitation).delete_all()
+        @event.event_user_relations.where(type: :EventRequest).each do |request|
+          # Create RSVP for the requesting user
+          rsvp = Rsvp.new(user_id: request.user_id, event_id: request.event_id)
+          # TODO Create specific controller action for accepting & rejecting 
+          # requests & invitations to DRY up the code
+          if ! (request.destroy && rsvp.save)
+            puts "Failed to save RSVP!"
+            rsvp.errors.full_messages.each do |msg|
+              puts msg
+              flash.now[:error] = msg
+            end
+          end
+        end
+      end
+      redirect_to @event
     else
       flash.error = "Failed to update your event!"
       render :edit, status: :unprocessable_entity
@@ -52,13 +75,12 @@ class EventsController < ApplicationController
     if current_user.id != event.organizer_id
       head :forbidden
     else
-      # Remove all attendees
-      Rsvp.where(event_id: event.id).delete_all
+      event.event_user_relations.delete_all
       event.delete
       flash[:notice] = "Your event \"#{event.title}\" has been deleted"
 
       organizer = User.find(event.organizer_id)
-      redirect_to "/users/#{organizer.username}/events", status: :see_other
+      redirect_to user_events_url(organizer.username), status: :see_other
     end
   end
 

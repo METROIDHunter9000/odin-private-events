@@ -18,7 +18,8 @@ class UsersController < ApplicationController
 
   def show
     @user = User.find_by(username: params[:username])
-    @events = Event.where(organizer_id: @user.id)
+    @events = @user.organized_events;
+    #@events = Event.where(organizer_id: @user.id)
   end
 
   private
